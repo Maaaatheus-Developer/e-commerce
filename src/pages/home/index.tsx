@@ -1,6 +1,26 @@
 import { BsCartPlus } from "react-icons/bs";
+import { useEffect, useState } from "react";
+import { api } from "../../services/api";
+
+interface ProductProps {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  cover: string;
+}
 
 export function Home() {
+  const [products, setProducts] = useState<ProductProps[]>([]);
+
+  useEffect(() => {
+    async function getProducts() {
+      const response = await api.get("/products");
+      setProducts(response.data);
+    }
+    getProducts();
+  }, []);
+
   return (
     <div>
       <main className="w-full max-w-7xl px-4 mx-auto">
@@ -9,22 +29,26 @@ export function Home() {
         </h1>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
-          <section className="w-full">
-            <img
-              className="w-full rounded-lg max-h-70 mb-2"
-              src="https://img.freepik.com/vetores-gratis/composicao-realista-sem-fio-de-fones-de-ouvido-com-imagem-isolada-de-telefones-com-estacao-de-dock-de-banco-de-potencia-com-ilustracao-vetorial-de-reflexoes_1284-73201.jpg?t=st=1740379077~exp=1740382677~hmac=c02df12d4da97d2faf3859c40027adec2c9a3c50371493d256eeac97354978f6&w=740"
-              alt="
-            logo do produto"
-            />
+          {products.map((product) => (
+            <section key={product.id} className="w-full">
+              <img
+                className="w-full rounded-lg max-h-70 mb-2"
+                src={product.cover}
+                alt={product.title}
+              />
 
-            <p className="font-medium mt-1 mb-2">Airpods pro</p>
-            <div className="flex gap-3 items-center">
-              <strong className="text-zinc-700/90">R$ 10</strong>
-              <button className="bg-zinc-900 p-1 rounded">
-                <BsCartPlus size={20} color="#FFF" />
-              </button>
-            </div>
-          </section>
+              <p className="font-medium mt-1 mb-2">{product.title}</p>
+              <div className="flex gap-3 items-center">
+                <strong className="text-zinc-700/90">{product.price.toLocaleString('PT-BR', {
+                  style: "currency",
+                  currency: 'BRL'
+                })}</strong>
+                <button className="bg-zinc-900 p-1 rounded">
+                  <BsCartPlus size={20} color="#FFF" />
+                </button>
+              </div>
+            </section>
+          ))}
         </div>
       </main>
     </div>
