@@ -1,18 +1,11 @@
 import { useContext } from "react";
-import { CartContext, CartProps } from "../../contexts/cartContext";
+import { CartContext, CartItem } from "../../contexts/cartContext";
 import { Link } from "react-router-dom";
-import toast from "react-hot-toast";
 
 export function Cart() {
   const { cart, total, removeItemCart, addItemCart } = useContext(CartContext);
 
-  function handleRemoveCartItem(product: CartProps) {
-    toast.error(`Você removeu o produto ${product.title} do seu carrinho`, {
-      style: {
-        fontWeight: "bold",
-      },
-    });
-
+  function handleRemoveCartItem(product: CartItem) {
     removeItemCart(product);
   }
 
@@ -32,39 +25,49 @@ export function Cart() {
           </Link>
         </div>
       )}
-      {cart.map((item) => (
-        <section
-          key={item.id}
-          className=" flex items-center justify-between border-b-2 border-gray-300"
-        >
-          <img className="w-28" src={item.cover} alt={item.title} />
-          <strong>Preço: {item.price}</strong>
 
-          <div className="flex-items-center justify-center">
-            <button
-              onClick={() => handleRemoveCartItem(item)}
-              className="bg-black px-2.5 rounded text-white font-medium flex items-center justify-center"
-            >
-              -
-            </button>
-            {item.amount}
-            <button
-              onClick={() => addItemCart(item)}
-              className="bg-black px-2 rounded text-white font-medium flex items-center justify-center"
-            >
-              +
-            </button>
-          </div>
+      <table className=" w-full table-auto">
+        <tbody>
+          {cart.map((item) => (
+            <tr key={item.id} className="border-b-2 border-gray-300">
+              <td>
+                <img className="w-28" src={item.cover} alt={item.title} />
+              </td>
+              <td>
+                <strong>Preço: {item.price}</strong>
+              </td>
 
-          <strong className="float-right">
-            SubTotal:
-            {item.total.toLocaleString("pt-BR", {
-              style: "currency",
-              currency: "BRL",
-            })}
-          </strong>
-        </section>
-      ))}
+              <td>
+                <div className="flex-items-center justify-center">
+                  <button
+                    onClick={() => handleRemoveCartItem(item)}
+                    className="bg-black px-2.5 rounded text-white font-medium flex items-center justify-center"
+                  >
+                    -
+                  </button>
+                  {item.amount}
+                  <button
+                    onClick={() => addItemCart(item)}
+                    className="bg-black px-2 rounded text-white font-medium flex items-center justify-center"
+                  >
+                    +
+                  </button>
+                </div>
+              </td>
+
+              <td>
+                <strong className="float-right">
+                  SubTotal:
+                  {item.total.toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  })}
+                </strong>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
       {cart.length !== 0 && <p className="font-bold mt4">Total: {total}</p>}
     </div>

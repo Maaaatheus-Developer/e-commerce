@@ -1,39 +1,27 @@
-import { createContext, ReactNode, useState } from "react";
+import { createContext, PropsWithChildren, useState } from "react";
 import { ProductProps } from "../pages/home/index";
+import toast from "react-hot-toast";
 
-interface CartContextData {
-  cart: CartProps[];
-  cartAmount: number;
-  addItemCart: (newItem: ProductProps) => void;
-  removeItemCart: (product: CartProps) => void;
-  total: string;
-}
+type CartContextData = ReturnType<typeof cartHook>;
 
-export interface CartProps {
-  id: number;
-  title: string;
-  description: string;
-  price: number;
-  cover: string;
+export type CartItem = ProductProps & {
   amount: number;
   total: number;
-}
-
-interface CartProviderProps {
-  children: ReactNode;
-}
+};
 
 export const CartContext = createContext({} as CartContextData);
 
-function CartProvider({ children }: CartProviderProps) {
-  const [cart, setCart] = useState<CartProps[]>([]);
+const cartHook = () => {
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [total, setTotal] = useState("");
 
   function addItemCart(newItem: ProductProps) {
     //Adiciona no carrinho
 
     const indexItem = cart.findIndex((item) => item.id === newItem.id); //-1
-    if (indexItem !== -1) {
+
+    const itemJaAdicionado = indexItem !== -1;
+    if (itemJaAdicionado) {
       //Se entrou aqui, apenas somamos +1 na quantidade e calculamos o total desse carrinho
       let cartList = cart;
       cartList[indexItem].amount = cartList[indexItem].amount + 1;
@@ -41,7 +29,16 @@ function CartProvider({ children }: CartProviderProps) {
         cartList[indexItem].amount * cartList[indexItem].price;
       setCart(cartList);
       totalResultCart(cartList);
-      return; 
+      toast.success(
+        `O produto foi adicionado ${cartList[indexItem].amount} vezes`,
+        {
+          style: {
+            fontWeight: "bold",
+          },
+        }
+      );
+
+      return;
     }
 
     let data = {
@@ -52,9 +49,15 @@ function CartProvider({ children }: CartProviderProps) {
 
     setCart((products) => [...products, data]);
     totalResultCart([...cart, data]);
+
+    toast.success("Produto adicionado no carrinho", {
+      style: {
+        fontWeight: "bold",
+      },
+    });
   }
 
-  function removeItemCart(product: CartProps) {
+  function removeItemCart(product: CartItem) {
     const indexItem = cart.findIndex((item) => item.id === product.id);
 
     //Diminuir um amount
@@ -68,15 +71,25 @@ function CartProvider({ children }: CartProviderProps) {
       setCart(cartList);
 
       totalResultCart(cartList);
+      toast.error(`Você tem um total de ${product.amount} produtos`, {
+        style: {
+          fontWeight: "bold",
+        },
+      });
       return;
     }
 
     const removeItem = cart.filter((item) => item.id !== product.id);
     setCart(removeItem);
     totalResultCart(removeItem);
+    toast.error(`O produto ${product.title} foi removido do seu carrinho`, {
+      style: {
+        fontWeight: "bold",
+      },
+    });
   }
 
-  function totalResultCart(items: CartProps[]) {
+  function totalResultCart(items: CartItem[]) {
     let myCart = items;
     let result = myCart.reduce((acc, obj) => {
       return acc + obj.total;
@@ -90,19 +103,19 @@ function CartProvider({ children }: CartProviderProps) {
     setTotal(resultFormat);
   }
 
-  return (
-    <CartContext.Provider
-      value={{
-        cart,
-        cartAmount: cart.length,
-        addItemCart,
-        removeItemCart,
-        total,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
-  );
+  return {
+    cart,
+    cartAmount: cart.length,
+    addItemCart,
+    removeItemCart,
+    total,
+  };
+};
+
+function CartProvider({ children }: PropsWithChildren) {
+  const value = cartHook();
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export default CartProvider;

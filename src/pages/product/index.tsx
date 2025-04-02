@@ -2,7 +2,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../../services/api";
 import { useContext, useEffect, useState } from "react";
 import { ProductProps } from "../home";
-import toast from "react-hot-toast";
 import { CartContext } from "../../contexts/cartContext";
 import { BsCartPlus } from "react-icons/bs";
 
@@ -10,7 +9,7 @@ export function Product() {
   const { id } = useParams();
   const [product, setProduct] = useState<ProductProps>();
   const { addItemCart } = useContext(CartContext);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function getProducts() {
@@ -22,13 +21,12 @@ export function Product() {
   }, [id]);
 
   function handleAddItem(product: ProductProps) {
-    toast.success("Produto adicionado no carrinho", {
-      style: {
-        fontWeight: "bold",
-      },
-    });
     addItemCart(product);
-    navigate('/cart')
+    navigate("/cart");
+  }
+
+  function voltar() {
+    navigate("/");
   }
 
   return (
@@ -36,6 +34,15 @@ export function Product() {
       <main className="w-full max-w-7xl px-4 mx-auto my-6">
         {product && (
           <section className="w-full">
+            <div className="py-3">
+              <button
+                className="bg-black text-white font-bold w-28 rounded-2xl h-8"
+                onClick={voltar}
+              >
+                Voltar
+              </button>
+            </div>
+
             <div className="flex flex-col lg:flex-row">
               <img
                 className="flex-1 w-full max-h-72 object-contain"
